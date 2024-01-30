@@ -140,7 +140,7 @@ public class CmdHelp extends Hook {
         printWriter.println("    获取此功能的当前开关状态。");
         printWriter.println("    举例:[pm pinning -s -g]");
         printWriter.println("-------------------------------------");
-        printWriter.println("From PinningApp, Version v.1.0, author: HChenX");
+        printWriter.println("From PinningApp, Version v.1.2, author: HChenX");
     }
 
     public void lockScreen(PrintWriter pw, int value) {
