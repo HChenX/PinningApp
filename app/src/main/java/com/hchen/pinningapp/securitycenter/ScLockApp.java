@@ -108,7 +108,7 @@ public class ScLockApp extends Hook {
         try {
             return Settings.Global.getInt(context.getContentResolver(), "key_lock_app");
         } catch (Settings.SettingNotFoundException e) {
-            logE("LockApp", "getInt key_lock_app will set E: " + e);
+            logE("LockApp", "getInt key_lock_app E: " + e);
         }
         return -1;
     }
@@ -117,7 +117,7 @@ public class ScLockApp extends Hook {
         try {
             return Settings.Global.getInt(context.getContentResolver(), "lock_app_sidebar");
         } catch (Settings.SettingNotFoundException e) {
-            logE("LockApp", "getInt lock_app_sidebar will set E: " + e);
+            logE("LockApp", "getInt lock_app_sidebar E: " + e);
             setSidebar(context);
         }
         return -1;

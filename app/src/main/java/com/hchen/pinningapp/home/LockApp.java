@@ -37,6 +37,7 @@ public class LockApp extends Hook {
     boolean isListen = false;
     boolean isListen2 = false;
     boolean isLock = false;
+
     @Override
     public void init() {
         if (isPad()) {
@@ -152,7 +153,7 @@ public class LockApp extends Hook {
         try {
             return Settings.Global.getInt(context.getContentResolver(), "key_lock_app");
         } catch (Settings.SettingNotFoundException e) {
-            logE("LockApp", "getInt hyceiler_lock_app will set E: " + e);
+            logE("LockApp", "getInt hyceiler_lock_app E: " + e);
         }
         return -1;
     }

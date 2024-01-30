@@ -29,6 +29,9 @@ import java.io.PrintWriter;
 public class CmdHelp extends Hook {
     Context mContext;
 
+    int lockScreenCount = 0;
+    int sidebarCount = 0;
+
     @Override
     public void init() {
         findAndHookMethod("com.android.server.pm.PackageManagerShellCommand",
@@ -126,25 +129,12 @@ public class CmdHelp extends Hook {
             }
             switch (getMyLockScreen(mContext)) {
                 case -1 -> {
-                    switch (getMyLockScreen(mContext)) {
-                        case 0 -> {
-                            if (value != 0) setMyLockScreen(pw, mContext, value);
-                            else
-                                pw.println("exit_lock_app is already 0, there is no need to set it again!");
-                        }
-                        case 1 -> {
-                            if (value != 1) setMyLockScreen(pw, mContext, value);
-                            else
-                                pw.println("exit_lock_app is already 1, there is no need to set it again!");
-                        }
-                        case -1 -> {
-                            pw.println("Set exit_lock_app unknown error occurred when is "
-                                    + value + ", failed to set successfully!");
-                        }
-                        default -> {
-                            pw.println("Unknown value obtained from exit_lock_app, restoring to 0!");
-                            setMyLockScreen(pw, mContext, 0);
-                        }
+                    if (lockScreenCount < 3) {
+                        lockScreen(pw, value);
+                        lockScreenCount = lockScreenCount + 1;
+                    } else {
+                        lockScreenCount = 0;
+                        pw.println("Attempted to set exit_lock_app multiple times, but failed!");
                     }
                 }
                 case 0 -> {
@@ -177,25 +167,12 @@ public class CmdHelp extends Hook {
             }
             switch (getSidebar(mContext)) {
                 case -1 -> {
-                    switch (getSidebar(mContext)) {
-                        case 0 -> {
-                            if (value != 0) setSidebar(pw, mContext, value);
-                            else
-                                pw.println("lock_app_sidebar is already 0, there is no need to set it again!");
-                        }
-                        case 1 -> {
-                            if (value != 1) setSidebar(pw, mContext, value);
-                            else
-                                pw.println("lock_app_sidebar is already 1, there is no need to set it again!");
-                        }
-                        case -1 -> {
-                            pw.println("Set lock_app_sidebar unknown error occurred when is "
-                                    + value + ", failed to set successfully!");
-                        }
-                        default -> {
-                            pw.println("Unknown value obtained from lock_app_sidebar, restoring to 0!");
-                            setMyLockScreen(pw, mContext, 0);
-                        }
+                    if (sidebarCount < 3) {
+                        sidebar(pw, value);
+                        sidebarCount = sidebarCount + 1;
+                    } else {
+                        sidebarCount = 0;
+                        pw.println("Attempted to set lock_app_sidebar multiple times, but failed!");
                     }
                 }
                 case 0 -> {
@@ -222,7 +199,7 @@ public class CmdHelp extends Hook {
         try {
             return Settings.Global.getInt(context.getContentResolver(), "exit_lock_app_screen");
         } catch (Settings.SettingNotFoundException e) {
-            logE(tag, "getMyLockScreen E will set " + e);
+            logE(tag, "getMyLockScreen is null will set 0 E:" + e);
             setMyLockScreen(null, context, 0);
         }
         return -1;
@@ -232,7 +209,7 @@ public class CmdHelp extends Hook {
         try {
             return Settings.Global.getInt(context.getContentResolver(), "lock_app_sidebar");
         } catch (Settings.SettingNotFoundException e) {
-            logE("LockApp", "getInt lock_app_sidebar will set E: " + e);
+            logE("LockApp", "getInt lock_app_sidebar is null will set 0 E: " + e);
             setSidebar(null, context, 0);
         }
         return -1;

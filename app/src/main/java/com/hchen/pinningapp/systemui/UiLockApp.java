@@ -227,7 +227,7 @@ public class UiLockApp extends Hook {
         try {
             return Settings.Global.getInt(context.getContentResolver(), "key_lock_app");
         } catch (Settings.SettingNotFoundException e) {
-            logE("LockApp", "getInt hyceiler_lock_app will set E: " + e);
+            logE("LockApp", "getInt hyceiler_lock_app will set -1 E: " + e);
             setLockApp(context, -1);
         }
         return -1;
@@ -237,7 +237,7 @@ public class UiLockApp extends Hook {
         try {
             return Settings.System.getInt(context.getContentResolver(), "lock_to_app_enabled") == 1;
         } catch (Settings.SettingNotFoundException e) {
-            logE(tag, "getSystemLock E will set " + e);
+            logE(tag, "getSystemLock will set 0 E: " + e);
             setSystemLockApp(context);
         }
         return false;
@@ -247,7 +247,7 @@ public class UiLockApp extends Hook {
         try {
             return Settings.Secure.getInt(context.getContentResolver(), "lock_to_app_exit_locked") == 1;
         } catch (Settings.SettingNotFoundException e) {
-            logE(tag, "getSystemLockScreen E will set " + e);
+            logE(tag, "getSystemLockScreen will set 0 E: " + e);
             setSystemLockScreen(context, 0);
         }
         return false;
