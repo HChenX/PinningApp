@@ -55,18 +55,19 @@ public class UiLockApp extends Hook {
     public int count = 0;
     public int eCount = 0;
     boolean isLock = false;
+    public static Resources resources;
 
     @Override
     public void init() {
-
-
         hookAllConstructors("com.android.systemui.statusbar.phone.AutoHideController",
                 new HookAction() {
                     @Override
                     protected void after(XC_MethodHook.MethodHookParam param) {
                         Context context = (Context) param.args[0];
+                        if (resources == null) {
+                            resources = addModuleRes(context);
+                        }
                         if (!isListen) {
-
                             ContentObserver contentObserver = new ContentObserver(new Handler(context.getMainLooper())) {
                                 @Override
                                 public void onChange(boolean selfChange) {
@@ -99,15 +100,6 @@ public class UiLockApp extends Hook {
                         }
                         if (getSystemLockScreen(mContext)) {
                             setSystemLockScreen(mContext, 0);
-                        }
-                        if (false) {
-                            if (!getMyLockScreen(mContext)) {
-                                setMyLockScreen(mContext, 1);
-                            }
-                        } else {
-                            if (getMyLockScreen(mContext)) {
-                                setMyLockScreen(mContext, 0);
-                            }
                         }
                         if (action == 2) {
                             count = count + 1;
@@ -261,16 +253,6 @@ public class UiLockApp extends Hook {
         return false;
     }
 
-    public boolean getMyLockScreen(Context context) {
-        try {
-            return Settings.Global.getInt(context.getContentResolver(), "exit_lock_app_screen") == 1;
-        } catch (Settings.SettingNotFoundException e) {
-            logE(tag, "getMyLockScreen E will set " + e);
-            setMyLockScreen(context, 0);
-        }
-        return false;
-    }
-
     public static void setLockApp(Context context, int id) {
         Settings.Global.putInt(context.getContentResolver(), "key_lock_app", id);
     }
@@ -283,15 +265,11 @@ public class UiLockApp extends Hook {
         Settings.Secure.putInt(context.getContentResolver(), "lock_to_app_exit_locked", value);
     }
 
-    public static void setMyLockScreen(Context context, int value) {
-        Settings.Global.putInt(context.getContentResolver(), "exit_lock_app_screen", value);
-    }
-
     /**
      * @noinspection deprecation
      */
     public static class LockAppHandler extends Handler {
-        public Resources resources;
+
 
         @Override
         public void handleMessage(@NonNull Message msg) {
@@ -300,9 +278,6 @@ public class UiLockApp extends Hook {
             if (context == null) {
                 mHandler.sendMessageDelayed(mHandler.obtainMessage(msg.what), 500);
                 return;
-            }
-            if (resources == null) {
-                resources = addModuleRes(context);
             }
             if (resources == null) {
                 Log.logE("UiLockApp", "resources is null!!");

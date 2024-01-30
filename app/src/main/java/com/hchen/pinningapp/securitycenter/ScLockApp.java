@@ -1,3 +1,21 @@
+/*
+ * This file is part of PinningApp.
+
+ * PinningApp is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 3 of the
+ * License.
+
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
+ * Copyright (C) 2023-2024 PinningApp Contributions
+ */
 package com.hchen.pinningapp.securitycenter;
 
 import android.content.Context;
@@ -21,6 +39,7 @@ import de.robv.android.xposed.XC_MethodHook;
 public class ScLockApp extends Hook {
     boolean isListen = false;
     boolean isLock = false;
+    Context context;
 
     @Override
     public void init() {
@@ -49,7 +68,7 @@ public class ScLockApp extends Hook {
                         new HookAction() {
                             @Override
                             protected void after(XC_MethodHook.MethodHookParam param) {
-                                Context context = (Context) param.args[0];
+                                context = (Context) param.args[0];
                                 if (!isListen) {
                                     ContentObserver contentObserver = new ContentObserver(new Handler(context.getMainLooper())) {
                                         @Override
@@ -73,7 +92,9 @@ public class ScLockApp extends Hook {
                     new HookAction() {
                         @Override
                         protected void before(XC_MethodHook.MethodHookParam param) {
-                            if (isLock) param.setResult(false);
+                            if (isLock) {
+                                if (getSidebar(context) == 1) param.setResult(false);
+                            }
                         }
                     }
             );
@@ -83,12 +104,26 @@ public class ScLockApp extends Hook {
         DexKit.close(dexKitBridge);
     }
 
-    public static int getLockApp(Context context) {
+    public int getLockApp(Context context) {
         try {
             return Settings.Global.getInt(context.getContentResolver(), "key_lock_app");
         } catch (Settings.SettingNotFoundException e) {
-            logE("LockApp", "getInt hyceiler_lock_app will set E: " + e);
+            logE("LockApp", "getInt key_lock_app will set E: " + e);
         }
         return -1;
+    }
+
+    public int getSidebar(Context context) {
+        try {
+            return Settings.Global.getInt(context.getContentResolver(), "lock_app_sidebar");
+        } catch (Settings.SettingNotFoundException e) {
+            logE("LockApp", "getInt lock_app_sidebar will set E: " + e);
+            setSidebar(context);
+        }
+        return -1;
+    }
+
+    public void setSidebar(Context context) {
+        Settings.Global.putInt(context.getContentResolver(), "lock_app_sidebar", 0);
     }
 }

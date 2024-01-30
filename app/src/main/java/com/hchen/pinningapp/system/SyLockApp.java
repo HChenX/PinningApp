@@ -37,7 +37,6 @@ public class SyLockApp extends Hook {
     private int taskId;
     private boolean isObserver = false;
     boolean isLock = false;
-    boolean needLockScreen = false;
 
     @Override
     public void init() {
@@ -48,14 +47,21 @@ public class SyLockApp extends Hook {
                     protected void after(XC_MethodHook.MethodHookParam param) {
                         try {
                             Context context = (Context) XposedHelpers.getObjectField(param.thisObject, "mContext");
-                            if (context == null) return;
+                            if (context == null) {
+                                context = findContext(FlAG_ONLY_ANDROID);
+                                if (context == null) {
+                                    logE(tag, "onSystemReady context is null!!");
+                                    return;
+                                }
+                            }
                             if (!isObserver) {
-                                ContentObserver contentObserver = new ContentObserver(new Handler(context.getMainLooper())) {
+                                Context finalContext = context;
+                                ContentObserver contentObserver = new ContentObserver(new Handler(finalContext.getMainLooper())) {
                                     @Override
                                     public void onChange(boolean selfChange, @Nullable Uri uri, int flags) {
-                                        isLock = getLockApp(context) != -1;
+                                        isLock = getLockApp(finalContext) != -1;
                                         if (isLock) {
-                                            taskId = getLockApp(context);
+                                            taskId = getLockApp(finalContext);
                                             callMethod(param.thisObject, "startSystemLockTaskMode", taskId);
                                         } else {
                                             callMethod(param.thisObject, "stopSystemLockTaskMode");
@@ -65,16 +71,6 @@ public class SyLockApp extends Hook {
                                 context.getContentResolver().registerContentObserver(
                                         Settings.Global.getUriFor("key_lock_app"),
                                         false, contentObserver);
-
-                                ContentObserver contentObserver1 = new ContentObserver(new Handler(context.getMainLooper())) {
-                                    @Override
-                                    public void onChange(boolean selfChange) {
-                                        needLockScreen = getMyLockScreen(context) == 1;
-                                    }
-                                };
-                                context.getContentResolver().registerContentObserver(
-                                        Settings.Global.getUriFor("exit_lock_app_screen"),
-                                        false, contentObserver1);
                                 isObserver = true;
                             }
                         } catch (Throwable e) {
@@ -89,7 +85,15 @@ public class SyLockApp extends Hook {
                 new HookAction() {
                     @Override
                     protected void before(XC_MethodHook.MethodHookParam param) {
-                        if (needLockScreen) {
+                        Context mContext = (Context) getObjectField(param.thisObject, "mContext");
+                        if (mContext == null) {
+                            mContext = findContext(FlAG_ONLY_ANDROID);
+                            if (mContext == null) {
+                                logE(tag, "shouldLockKeyguard context is null!!");
+                                return;
+                            }
+                        }
+                        if (getMyLockScreen(mContext) == 1) {
                             param.setResult(true);
                         } else {
                             param.setResult(false);

@@ -21,6 +21,7 @@ package com.hchen.pinningapp;
 import com.hchen.pinningapp.home.LockApp;
 import com.hchen.pinningapp.hook.Hook;
 import com.hchen.pinningapp.securitycenter.ScLockApp;
+import com.hchen.pinningapp.system.CmdHelp;
 import com.hchen.pinningapp.system.SyLockApp;
 import com.hchen.pinningapp.systemui.UiLockApp;
 
@@ -36,6 +37,7 @@ public class HookMain implements IXposedHookLoadPackage, IXposedHookZygoteInit {
         switch (lpparam.packageName) {
             case "android" -> {
                 initHook(new SyLockApp(), lpparam);
+                initHook(new CmdHelp(), lpparam);
             }
             case "com.miui.home" -> {
                 initHook(new LockApp(), lpparam);
@@ -54,7 +56,7 @@ public class HookMain implements IXposedHookLoadPackage, IXposedHookZygoteInit {
     }
 
     @Override
-    public void initZygote(StartupParam startupParam) throws Throwable {
+    public void initZygote(StartupParam startupParam) {
         modulePath = startupParam.modulePath;
     }
 }
