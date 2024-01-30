@@ -18,6 +18,13 @@
  */
 package com.hchen.pinningapp.hook;
 
+import android.app.Application;
+import android.content.Context;
+
+import androidx.annotation.IntDef;
+
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -30,6 +37,21 @@ import de.robv.android.xposed.callbacks.XC_LoadPackage;
 
 public abstract class Hook extends Log {
     public String tag = getClass().getSimpleName(); // 获取继承类的类名
+    @IntDef(value = {
+            FLAG_ALL,
+            FLAG_CURRENT_APP,
+            FlAG_ONLY_ANDROID
+    })
+    @Retention(RetentionPolicy.SOURCE)
+    public @interface Duration {
+    }
+
+    // 尝试全部
+    public static final int FLAG_ALL = 0;
+    // 仅获取当前应用
+    public static final int FLAG_CURRENT_APP = 1;
+    // 获取 Android 系统
+    public static final int FlAG_ONLY_ANDROID = 2;
 
     public XC_LoadPackage.LoadPackageParam loadPackageParam;
 
@@ -453,5 +475,49 @@ public abstract class Hook extends Log {
             logE(tag, "Set field: " + fieldName + " E: " + f);
         }
     }
+
+    public static Context findContext(@Duration int flag) {
+        Context context = null;
+        try {
+            switch (flag) {
+                case 0 -> {
+                    if ((context = currentApplication()) == null)
+                        context = getSystemContext();
+                }
+                case 1 -> {
+                    context = currentApplication();
+                }
+                case 2 -> {
+                    context = getSystemContext();
+                }
+                default -> {
+                }
+            }
+            return context;
+        } catch (Throwable ignore) {
+        }
+        return null;
+    }
+
+    private static Context currentApplication() {
+        return (Application) XposedHelpers.callStaticMethod(XposedHelpers.findClass(
+                        "android.app.ActivityThread", null),
+                "currentApplication");
+    }
+
+    private static Context getSystemContext() {
+        Context context = null;
+        Object currentActivityThread = XposedHelpers.callStaticMethod(XposedHelpers.findClass("android.app.ActivityThread",
+                        null),
+                "currentActivityThread");
+        if (currentActivityThread != null)
+            context = (Context) XposedHelpers.callMethod(currentActivityThread,
+                    "getSystemContext");
+        if (context == null)
+            context = (Context) XposedHelpers.callMethod(currentActivityThread,
+                    "getSystemUiContext");
+        return context;
+    }
+
 }
 

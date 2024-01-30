@@ -18,7 +18,11 @@
  */
 package com.hchen.pinningapp;
 
+import com.hchen.pinningapp.home.LockApp;
 import com.hchen.pinningapp.hook.Hook;
+import com.hchen.pinningapp.securitycenter.ScLockApp;
+import com.hchen.pinningapp.system.SyLockApp;
+import com.hchen.pinningapp.systemui.UiLockApp;
 
 import de.robv.android.xposed.IXposedHookLoadPackage;
 import de.robv.android.xposed.callbacks.XC_LoadPackage.LoadPackageParam;
@@ -26,7 +30,20 @@ import de.robv.android.xposed.callbacks.XC_LoadPackage.LoadPackageParam;
 public class HookMain implements IXposedHookLoadPackage {
     @Override
     public void handleLoadPackage(LoadPackageParam lpparam) {
-
+        switch (lpparam.packageName) {
+            case "android" -> {
+                initHook(new SyLockApp(), lpparam);
+            }
+            case "com.miui.home" -> {
+                initHook(new LockApp(), lpparam);
+            }
+            case "com.android.systemui" -> {
+                initHook(new UiLockApp(), lpparam);
+            }
+            case "com.miui.securitycenter" -> {
+                initHook(new ScLockApp(), lpparam);
+            }
+        }
     }
 
     public static void initHook(Hook hook, LoadPackageParam param) {

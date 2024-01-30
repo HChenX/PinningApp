@@ -1,0 +1,94 @@
+package com.hchen.pinningapp.securitycenter;
+
+import android.content.Context;
+import android.database.ContentObserver;
+import android.os.Handler;
+import android.provider.Settings;
+
+import com.hchen.pinningapp.hook.Hook;
+import com.hchen.pinningapp.utils.DexKit;
+
+import org.luckypray.dexkit.DexKitBridge;
+import org.luckypray.dexkit.query.FindClass;
+import org.luckypray.dexkit.query.FindMethod;
+import org.luckypray.dexkit.query.matchers.ClassMatcher;
+import org.luckypray.dexkit.query.matchers.MethodMatcher;
+import org.luckypray.dexkit.result.ClassData;
+import org.luckypray.dexkit.result.MethodData;
+
+import de.robv.android.xposed.XC_MethodHook;
+
+public class ScLockApp extends Hook {
+    boolean isListen = false;
+    boolean isLock = false;
+
+    @Override
+    public void init() {
+        DexKitBridge dexKitBridge = DexKit.init(loadPackageParam);
+        try {
+
+            MethodData methodData = dexKitBridge.findMethod(
+                    FindMethod.create()
+                            .matcher(MethodMatcher.create()
+                                    .declaredClass(ClassMatcher.create()
+                                            .usingStrings("startRegionSampling")
+                                    )
+                                    .name("dispatchTouchEvent")
+                            )
+            ).singleOrThrow(() -> new IllegalStateException("No such dispatchTouchEvent"));
+            ClassData data = dexKitBridge.findClass(
+                    FindClass.create()
+                            .matcher(ClassMatcher.create()
+                                    .usingStrings("startRegionSampling")
+                            )
+            ).singleOrThrow(() -> new IllegalStateException("No such Constructor"));
+            try {
+                // logE(tag, "dispatchTouchEvent: " + methodData + " Constructor: " + data + " class: " + data.getInstance(lpparam.classLoader));
+                findAndHookConstructor(data.getInstance(loadPackageParam.classLoader),
+                        Context.class,
+                        new HookAction() {
+                            @Override
+                            protected void after(XC_MethodHook.MethodHookParam param) {
+                                Context context = (Context) param.args[0];
+                                if (!isListen) {
+                                    ContentObserver contentObserver = new ContentObserver(new Handler(context.getMainLooper())) {
+                                        @Override
+                                        public void onChange(boolean selfChange) {
+                                            isLock = getLockApp(context) != -1;
+                                        }
+                                    };
+                                    context.getContentResolver().registerContentObserver(
+                                            Settings.Global.getUriFor("key_lock_app"),
+                                            false, contentObserver);
+                                    isListen = true;
+                                }
+                            }
+                        }
+                );
+            } catch (ClassNotFoundException e) {
+                logE(tag, "hook Constructor E: " + data);
+            }
+
+            hookMethod(methodData.getMethodInstance(loadPackageParam.classLoader),
+                    new HookAction() {
+                        @Override
+                        protected void before(XC_MethodHook.MethodHookParam param) {
+                            if (isLock) param.setResult(false);
+                        }
+                    }
+            );
+        } catch (Exception e) {
+            logE(tag, "unknown E: " + e);
+        }
+        DexKit.close(dexKitBridge);
+    }
+
+    public static int getLockApp(Context context) {
+        try {
+            return Settings.Global.getInt(context.getContentResolver(), "key_lock_app");
+        } catch (Settings.SettingNotFoundException e) {
+            logE("LockApp", "getInt hyceiler_lock_app will set E: " + e);
+        }
+        return -1;
+    }
+}

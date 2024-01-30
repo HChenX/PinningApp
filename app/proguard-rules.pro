@@ -19,3 +19,6 @@
 # If you keep the line number information, uncomment this to
 # hide the original source file name.
 #-renamesourcefileattribute SourceFile
+
+-keep class com.hchen.pinningapp.HookMain
+-keep class * extends com.hchen.pinningapp.hook.Hook
