@@ -70,6 +70,11 @@ public class CmdHelp extends Hook {
                                 case "-l", "-lockScreen" -> {
                                     try {
                                         String next = (String) callMethod(param.thisObject, "getNextArgRequired");
+                                        if ("-g".equals(next)) {
+                                            getOutPrintWriter.println("exit_lock_app is " + (getMyLockScreen(mContext) == 1 ? "1 Enable" : "0 Close"));
+                                            param.setResult(0);
+                                            return;
+                                        }
                                         lockScreen(getOutPrintWriter, Integer.parseInt(next));
                                     } catch (IllegalArgumentException e) {
                                         getOutPrintWriter.println("-l must be followed by a numerical parameter! For details, please refer to - h\n" + e);
@@ -81,6 +86,11 @@ public class CmdHelp extends Hook {
                                 case "-s", "-sidebar" -> {
                                     try {
                                         String next = (String) callMethod(param.thisObject, "getNextArgRequired");
+                                        if ("-g".equals(next)) {
+                                            getOutPrintWriter.println("lock_app_sidebar is " + (getSidebar(mContext) == 1 ? "1 Enable" : "0 Close"));
+                                            param.setResult(0);
+                                            return;
+                                        }
                                         sidebar(getOutPrintWriter, Integer.parseInt(next));
                                     } catch (IllegalArgumentException e) {
                                         getOutPrintWriter.println("-s must be followed by a numerical parameter! For details, please refer to - h\n" + e);
@@ -110,6 +120,12 @@ public class CmdHelp extends Hook {
         printWriter.println("    举例:[pm pinning -l 0] (关闭此功能)");
         printWriter.println("    举例:[pm pinning -l 1] (开启此功能)");
         printWriter.println("-------------------------------------");
+        printWriter.println("    [-l | lockScreen -g]: ");
+        printWriter.println("    Obtain the current switch status of this function.");
+        printWriter.println("    sample:[pm pinning -l -g]");
+        printWriter.println("    获取此功能的当前开关状态。");
+        printWriter.println("    举例:[pm pinning -l -g]");
+        printWriter.println("-------------------------------------");
         printWriter.println("    [-s | sidebar <value>]: ");
         printWriter.println("    Set this parameter to manage whether to reject pop-up sidebars when using pinning app.");
         printWriter.println("    sample:[pm pinning -s 0] (Turn off this feature)");
@@ -117,6 +133,12 @@ public class CmdHelp extends Hook {
         printWriter.println("    设置此参数即可管理是否在固定应用时拒绝弹出侧边栏。");
         printWriter.println("    举例:[pm pinning -s 0] (关闭此功能)");
         printWriter.println("    举例:[pm pinning -s 1] (开启此功能)");
+        printWriter.println("-------------------------------------");
+        printWriter.println("    [-s | sidebar -g]: ");
+        printWriter.println("    Obtain the current switch status of this function.");
+        printWriter.println("    sample:[pm pinning -s -g]");
+        printWriter.println("    获取此功能的当前开关状态。");
+        printWriter.println("    举例:[pm pinning -s -g]");
         printWriter.println("-------------------------------------");
         printWriter.println("From PinningApp, Version v.1.0, author: HChenX");
     }
