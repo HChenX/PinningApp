@@ -73,6 +73,9 @@ android {
     }
 
     androidResources {
+        additionalParameters += '--allow-reserved-package-id'
+        additionalParameters += '--package-id'
+        additionalParameters += '0x56'
         generateLocaleConfig = true
     }
 }

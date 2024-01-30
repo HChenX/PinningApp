@@ -16,7 +16,7 @@
 
  * Copyright (C) 2023-2024 PinningApp Contributions
  */
-package com.hchen.pinningapp.system;
+package com.hchen.pinningapp.utils;
 
 import com.hchen.pinningapp.hook.Log;
 

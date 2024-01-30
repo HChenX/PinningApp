@@ -21,6 +21,7 @@ package com.hchen.pinningapp.systemui;
 import android.app.ActivityManager;
 import android.content.ComponentName;
 import android.content.Context;
+import android.content.res.Resources;
 import android.database.ContentObserver;
 import android.os.Handler;
 import android.os.Message;
@@ -29,7 +30,9 @@ import android.view.MotionEvent;
 
 import androidx.annotation.NonNull;
 
+import com.hchen.pinningapp.R;
 import com.hchen.pinningapp.hook.Hook;
+import com.hchen.pinningapp.hook.Log;
 import com.hchen.pinningapp.utils.ToastHelper;
 
 import java.lang.reflect.Method;
@@ -63,6 +66,7 @@ public class UiLockApp extends Hook {
                     protected void after(XC_MethodHook.MethodHookParam param) {
                         Context context = (Context) param.args[0];
                         if (!isListen) {
+
                             ContentObserver contentObserver = new ContentObserver(new Handler(context.getMainLooper())) {
                                 @Override
                                 public void onChange(boolean selfChange) {
@@ -86,7 +90,7 @@ public class UiLockApp extends Hook {
                     @Override
                     protected void before(XC_MethodHook.MethodHookParam param) {
                         MotionEvent motionEvent = (MotionEvent) param.args[0];
-                        // logE(TAG, "mo: " + motionEvent.getActionMasked());
+                        // logE(tag, "mo: " + motionEvent.getActionMasked());
                         mContext = (Context) XposedHelpers.callMethod(param.thisObject, "getContext");
                         int action = motionEvent.getActionMasked();
                         int lockId = getLockApp(mContext);
@@ -96,7 +100,7 @@ public class UiLockApp extends Hook {
                         if (getSystemLockScreen(mContext)) {
                             setSystemLockScreen(mContext, 0);
                         }
-                        if (mPrefsMap.getBoolean("home_other_lock_app_screen")) {
+                        if (false) {
                             if (!getMyLockScreen(mContext)) {
                                 setMyLockScreen(mContext, 1);
                             }
@@ -130,11 +134,11 @@ public class UiLockApp extends Hook {
                                             sInstance, "getRunningTask");
                                 }
                             } else {
-                                logE(TAG, "ActivityManagerWrapper is null");
+                                logE(tag, "ActivityManagerWrapper is null");
                                 return;
                             }
                             if (runningTaskInfo == null) {
-                                logE(TAG, "runningTaskInfo is null");
+                                logE(tag, "runningTaskInfo is null");
                                 return;
                             }
                             // ActivityManager.RunningTaskInfo runningTaskInfo = (ActivityManager.RunningTaskInfo) XposedHelpers.callMethod(
@@ -146,7 +150,7 @@ public class UiLockApp extends Hook {
                             if ("com.miui.home".equals(pkg)) {
                                 return;
                             }
-                            // logE(TAG, "task id: " + taskId + " a: " + pkg);
+                            // logE(tag, "task id: " + taskId + " a: " + pkg);
                             remoAllMes();
                             if (lockId == -1) {
                                 mHandler.sendMessageDelayed(mHandler.obtainMessage(WILL_LOCK_APP), 1000);
@@ -241,7 +245,7 @@ public class UiLockApp extends Hook {
         try {
             return Settings.System.getInt(context.getContentResolver(), "lock_to_app_enabled") == 1;
         } catch (Settings.SettingNotFoundException e) {
-            logE(TAG, "getSystemLock E will set " + e);
+            logE(tag, "getSystemLock E will set " + e);
             setSystemLockApp(context);
         }
         return false;
@@ -251,7 +255,7 @@ public class UiLockApp extends Hook {
         try {
             return Settings.Secure.getInt(context.getContentResolver(), "lock_to_app_exit_locked") == 1;
         } catch (Settings.SettingNotFoundException e) {
-            logE(TAG, "getSystemLockScreen E will set " + e);
+            logE(tag, "getSystemLockScreen E will set " + e);
             setSystemLockScreen(context, 0);
         }
         return false;
@@ -261,7 +265,7 @@ public class UiLockApp extends Hook {
         try {
             return Settings.Global.getInt(context.getContentResolver(), "exit_lock_app_screen") == 1;
         } catch (Settings.SettingNotFoundException e) {
-            logE(TAG, "getMyLockScreen E will set " + e);
+            logE(tag, "getMyLockScreen E will set " + e);
             setMyLockScreen(context, 0);
         }
         return false;
@@ -287,6 +291,8 @@ public class UiLockApp extends Hook {
      * @noinspection deprecation
      */
     public static class LockAppHandler extends Handler {
+        public Resources resources;
+
         @Override
         public void handleMessage(@NonNull Message msg) {
             super.handleMessage(msg);
@@ -295,51 +301,52 @@ public class UiLockApp extends Hook {
                 mHandler.sendMessageDelayed(mHandler.obtainMessage(msg.what), 500);
                 return;
             }
+            if (resources == null) {
+                resources = addModuleRes(context);
+            }
+            if (resources == null) {
+                Log.logE("UiLockApp", "resources is null!!");
+                return;
+            }
             switch (msg.what) {
                 case WILL_LOCK_APP -> {
                     ToastHelper.makeText(context,
-                            context.getResources().getString(
-                                    mResHook.addResource("will_lock_app",
-                                            R.string.home_other_lock_app_will_lock)),
+                            resources.getString(
+                                    R.string.home_other_lock_app_will_lock),
                             false);
                 }
                 case LOCK_APP -> {
                     int taskId = (int) msg.obj;
                     setLockApp(context, taskId);
                     ToastHelper.makeText(context,
-                            context.getResources().getString(
-                                    mResHook.addResource("lock_app",
-                                            R.string.home_other_lock_app_lock)),
+                            resources.getString(
+                                    R.string.home_other_lock_app_lock),
                             false);
                 }
                 case WILL_UNLOCK_APP -> {
                     ToastHelper.makeText(context,
-                            context.getResources().getString(
-                                    mResHook.addResource("will_unlock_app",
-                                            R.string.home_other_lock_app_will_unlock)),
+                            resources.getString(
+                                    R.string.home_other_lock_app_will_unlock),
                             false);
                 }
                 case UNLOCK_APP -> {
                     setLockApp(context, -1);
                     ToastHelper.makeText(context,
-                            context.getResources().getString(
-                                    mResHook.addResource("unlock_app",
-                                            R.string.home_other_lock_app_unlock)),
+                            resources.getString(
+                                    R.string.home_other_lock_app_unlock),
                             false);
                 }
                 case UNKNOWN_ERROR -> {
                     ToastHelper.makeText(context,
-                            context.getResources().getString(
-                                    mResHook.addResource("lock_app_e",
-                                            R.string.home_other_lock_app_e)),
+                            resources.getString(
+                                    R.string.home_other_lock_app_e),
                             false);
                 }
                 case RESTORE -> {
                     setLockApp(context, -1);
                     ToastHelper.makeText(context,
-                            context.getResources().getString(
-                                    mResHook.addResource("lock_app_r",
-                                            R.string.home_other_lock_app_r)),
+                            resources.getString(
+                                    R.string.home_other_lock_app_r),
                             false);
                 }
             }

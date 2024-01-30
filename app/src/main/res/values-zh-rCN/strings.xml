@@ -1,0 +1,14 @@
+<resources>
+    <string name="app_name">固定应用</string>
+    <string name="app_more">固定应用，类似于IOS的引导式访问</string>
+    <string name="home_other_lock_app">固定应用</string>
+    <string name="home_other_lock_app_more">类 iOS 引导式访问，能将当前应用固定在屏幕上\n使用请长按顶部状态栏，再次长按即可退出\n首次使用需要重启手机</string>
+    <string name="home_other_lock_app_will_lock">即将锁定当前应用</string>
+    <string name="home_other_lock_app_lock">已锁定当前应用</string>
+    <string name="home_other_lock_app_unlock">已解锁当前应用</string>
+    <string name="home_other_lock_app_will_unlock">即将解锁当前应用</string>
+    <string name="home_other_lock_app_e">请在被锁定应用界面解锁</string>
+    <string name="home_other_lock_app_r">超次还原</string>
+    <string name="home_other_lock_app_sc">固定时禁止呼出侧边栏</string>
+    <string name="home_other_lock_app_screen">解除固定时跳转锁屏</string>
+</resources>

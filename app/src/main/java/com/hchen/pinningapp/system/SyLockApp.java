@@ -25,7 +25,10 @@ import android.os.Handler;
 import android.provider.Settings;
 import android.view.MotionEvent;
 
+import androidx.annotation.Nullable;
+
 import com.hchen.pinningapp.hook.Hook;
+import com.hchen.pinningapp.utils.Device;
 
 import de.robv.android.xposed.XC_MethodHook;
 import de.robv.android.xposed.XposedHelpers;

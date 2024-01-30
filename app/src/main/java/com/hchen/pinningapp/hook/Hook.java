@@ -18,14 +18,20 @@
  */
 package com.hchen.pinningapp.hook;
 
+import static com.hchen.pinningapp.HookMain.modulePath;
+
+import android.annotation.SuppressLint;
 import android.app.Application;
 import android.content.Context;
+import android.content.res.AssetManager;
+import android.content.res.Resources;
 
 import androidx.annotation.IntDef;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -37,6 +43,7 @@ import de.robv.android.xposed.callbacks.XC_LoadPackage;
 
 public abstract class Hook extends Log {
     public String tag = getClass().getSimpleName(); // 获取继承类的类名
+
     @IntDef(value = {
             FLAG_ALL,
             FLAG_CURRENT_APP,
@@ -69,6 +76,27 @@ public abstract class Hook extends Log {
 
     public void setLoadPackageParam(XC_LoadPackage.LoadPackageParam loadPackageParam) {
         this.loadPackageParam = loadPackageParam;
+    }
+
+    /**
+     * @noinspection JavaReflectionMemberAccess
+     */
+    public static Resources addModuleRes(Context context) {
+        String tag = "addModuleRes";
+        try {
+            @SuppressLint("DiscouragedPrivateApi")
+            Method AssetPath = AssetManager.class.getDeclaredMethod("addAssetPath", String.class);
+            AssetPath.setAccessible(true);
+            AssetPath.invoke(context.getResources().getAssets(), modulePath);
+            return context.getResources();
+        } catch (NoSuchMethodException e) {
+            logE(tag, "Method addAssetPath is null: " + e);
+        } catch (InvocationTargetException e) {
+            logE(tag, "InvocationTargetException: " + e);
+        } catch (IllegalAccessException e) {
+            logE(tag, "IllegalAccessException: " + e);
+        }
+        return null;
     }
 
     /*不能处理报错的方法需要私有*/

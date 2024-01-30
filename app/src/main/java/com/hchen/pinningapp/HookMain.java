@@ -25,9 +25,12 @@ import com.hchen.pinningapp.system.SyLockApp;
 import com.hchen.pinningapp.systemui.UiLockApp;
 
 import de.robv.android.xposed.IXposedHookLoadPackage;
+import de.robv.android.xposed.IXposedHookZygoteInit;
 import de.robv.android.xposed.callbacks.XC_LoadPackage.LoadPackageParam;
 
-public class HookMain implements IXposedHookLoadPackage {
+public class HookMain implements IXposedHookLoadPackage, IXposedHookZygoteInit {
+    public static String modulePath;
+
     @Override
     public void handleLoadPackage(LoadPackageParam lpparam) {
         switch (lpparam.packageName) {
@@ -48,5 +51,10 @@ public class HookMain implements IXposedHookLoadPackage {
 
     public static void initHook(Hook hook, LoadPackageParam param) {
         hook.runHook(param);
+    }
+
+    @Override
+    public void initZygote(StartupParam startupParam) throws Throwable {
+        modulePath = startupParam.modulePath;
     }
 }

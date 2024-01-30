@@ -18,7 +18,7 @@
  */
 package com.hchen.pinningapp.home;
 
-import static com.hchen.pinningapp.system.Device.isPad;
+import static com.hchen.pinningapp.utils.Device.isPad;
 
 import android.content.Context;
 import android.database.ContentObserver;

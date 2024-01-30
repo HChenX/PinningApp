@@ -1,4 +1,14 @@
 <resources>
     <string name="app_name">PinningApp</string>
     <string name="app_more">Pinning App, Guided access similar to IOS</string>
+    <string name="home_other_lock_app_sc">It is forbidden to call out the sidebar when pinned</string>
+    <string name="home_other_lock_app_screen">Jump to the lock screen when unpinned</string>
+    <string name="home_other_lock_app">Fixed applications</string>
+    <string name="home_other_lock_app_will_lock">Will lock App</string>
+    <string name="home_other_lock_app_lock">Lock App</string>
+    <string name="home_other_lock_app_unlock">Unlock App</string>
+    <string name="home_other_lock_app_will_unlock">Will Unlock App</string>
+    <string name="home_other_lock_app_r">Restore</string>
+    <string name="home_other_lock_app_e">Please unlock it in the locked app interface</string>
+    <string name="home_other_lock_app_more">iOS-like Guided Access that pins the current application to the screen\nTo use, press and hold the top status bar, and if you want to exit, press and hold the top status bar again\nThe first time you use it, you need to restart the device.</string>
 </resources>
