@@ -3,6 +3,24 @@ plugins {
 }
 
 android {
+    Properties properties = new Properties()
+    InputStream inputStream = project.rootProject.file('local.properties').newDataInputStream()
+    properties.load(inputStream)
+
+    def keyKeyStoreFile = file(properties.getProperty('keyStoreFile'))
+    def keyKeyStorePassword = properties.getProperty('keyStorePassword')
+    def keyKeyAlias = properties.getProperty('keyAlias')
+    def keyKeyAliasPassword = properties.getProperty('keyAliasPassword')
+
+    signingConfigs {
+        release {
+            storeFile keyKeyStoreFile
+            storePassword keyKeyStorePassword
+            keyAlias keyKeyAlias
+            keyPassword keyKeyAliasPassword
+        }
+    }
+
     namespace 'com.hchen.pinningapp'
     compileSdk 34
 
@@ -14,21 +32,54 @@ android {
         versionName "1.0"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+        signingConfig signingConfigs.release
+    }
+
+    packagingOptions {
+        resources {
+            excludes += "/META-INF/**"
+            excludes += "/kotlin/**"
+            excludes += "/*.txt"
+            excludes += "/*.bin"
+            excludes += "/*.json"
+        }
+        /*dex {
+            useLegacyPackaging = true
+        }
+        jniLibs {
+            useLegacyPackaging true
+        }*/
     }
 
     buildTypes {
         release {
-            minifyEnabled false
+            minifyEnabled true
+            signingConfig signingConfigs.release
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+        debug {
+            minifyEnabled false
+            signingConfig signingConfigs.debug
         }
     }
     compileOptions {
-        sourceCompatibility JavaVersion.VERSION_1_8
-        targetCompatibility JavaVersion.VERSION_1_8
+        sourceCompatibility JavaVersion.VERSION_20
+        targetCompatibility JavaVersion.VERSION_20
+    }
+
+    buildFeatures {
+        buildConfig true
+    }
+
+    androidResources {
+        generateLocaleConfig = true
     }
 }
 
 dependencies {
+
+    /*Xposed*/
+    compileOnly 'de.robv.android.xposed:api:82'
 
 //    implementation 'androidx.appcompat:appcompat:1.6.1'
 //    implementation 'com.google.android.material:material:1.11.0'
