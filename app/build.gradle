@@ -29,9 +29,14 @@ android {
         applicationId "com.hchen.pinningapp"
         minSdk 30
         targetSdk 34
-        versionCode 1
+        //noinspection HighAppVersionCode
+        versionCode 2024013100
         versionName "1.0"
 
+        ndk {
+            // noinspection ChromeOsAbiSupport
+            abiFilters 'arm64-v8a', 'armeabi-v7a'
+        }
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         signingConfig signingConfigs.release
     }
