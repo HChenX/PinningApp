@@ -28,6 +28,8 @@
 
 ![GIF](https://github.com/HChenX/PinningApp/blob/master/pinning_app_gif.gif)
 
+- 无法查看点击[此处](https://github.com/HChenX/PinningApp/blob/master/pinning_app_gif.gif)
+
 ### 使用方法：
 
 - 首先确定你是小米手机，模块只支持小米手机！当然如果你有办法可以为本项目PR，来获得更广泛的支持！
