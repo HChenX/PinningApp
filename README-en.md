@@ -30,6 +30,7 @@
 - When entering fixation mode, the phone will be fixed to display a specific app, and system
   gestures such as back will be disabled.
 - The GIF animation below illustrates this:
+![GIF](https://github.com/HChenX/PinningApp/blob/master/pinning_app_gif.gif)
 
 ### Usage:
 
