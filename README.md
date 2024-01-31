@@ -1,4 +1,16 @@
-## 固定应用(Pinning App)
+<div align="center">
+<h1>固定应用(Pinning App)</h1>
+
+![stars](https://img.shields.io/github/stars/HChenX/PinningApp?style=flat)
+![downloads](https://img.shields.io/github/downloads/HChenX/PinningApp/total)
+![Github repo size](https://img.shields.io/github/repo-size/HChenX/PinningApp)
+[![GitHub release (latest by date)](https://img.shields.io/github/v/release/HChenX/PinningApp)](https://github.com/HChenX/PinningApp/releases)
+[![GitHub Release Date](https://img.shields.io/github/release-date/HChenX/PinningApp)](https://github.com/HChenX/PinningApp/releases)
+![last commit](https://img.shields.io/github/last-commit/HChenX/PinningApp?style=flat)
+![language](https://img.shields.io/badge/language-java-purple)
+
+<p><b><a href="README-en.md">English</a> | <a href="README.md">简体中文</a></b></p>
+</div>
 
 ### 模块介绍:
 
