@@ -65,7 +65,7 @@
 - 感谢Android官方提供本功能的基本底层支持！
 - 感谢Xposed工具提供强大的Hook支持！
 - 感谢DexKit工具对本模块功能性支持！
-- 感谢@Sevtinge对本模块适配Pad做出的贡献！
+- 感谢[Sevtinge](https://github.com/Sevtinge)对本模块适配Pad做出的贡献！
 
 ### 项目要求：
 
