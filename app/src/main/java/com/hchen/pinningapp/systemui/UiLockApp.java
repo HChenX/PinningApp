@@ -223,7 +223,7 @@ public class UiLockApp extends Hook {
         mHandler.removeMessages(UNLOCK_APP);
     }
 
-    public static int getLockApp(Context context) {
+    public int getLockApp(Context context) {
         try {
             return Settings.Global.getInt(context.getContentResolver(), "key_lock_app");
         } catch (Settings.SettingNotFoundException e) {
@@ -257,11 +257,11 @@ public class UiLockApp extends Hook {
         Settings.Global.putInt(context.getContentResolver(), "key_lock_app", id);
     }
 
-    public static void setSystemLockApp(Context context) {
+    public void setSystemLockApp(Context context) {
         Settings.System.putInt(context.getContentResolver(), "lock_to_app_enabled", 0);
     }
 
-    public static void setSystemLockScreen(Context context, int value) {
+    public void setSystemLockScreen(Context context, int value) {
         Settings.Secure.putInt(context.getContentResolver(), "lock_to_app_exit_locked", value);
     }
 
@@ -269,8 +269,6 @@ public class UiLockApp extends Hook {
      * @noinspection deprecation
      */
     public static class LockAppHandler extends Handler {
-
-
         @Override
         public void handleMessage(@NonNull Message msg) {
             super.handleMessage(msg);

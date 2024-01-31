@@ -31,8 +31,8 @@ import java.lang.annotation.RetentionPolicy;
 @SuppressLint("WrongConstant")
 public class ToastHelper {
     @IntDef(value = {
-        LENGTH_SHORT,
-        LENGTH_LONG
+            LENGTH_SHORT,
+            LENGTH_LONG
     })
     @Retention(RetentionPolicy.SOURCE)
     public @interface Duration {
@@ -43,9 +43,7 @@ public class ToastHelper {
     public static final int LENGTH_LONG = 1;
 
     public static void makeText(Context context, CharSequence text) {
-        clearToast();
-        mToast = Toast.makeText(context, text, LENGTH_SHORT);
-        mToast.show();
+        makeText(context, text, true);
     }
 
     public static void makeText(Context context, CharSequence text, boolean needClear) {

@@ -149,7 +149,7 @@ public class LockApp extends Hook {
         }
     }
 
-    public static int getLockApp(Context context) {
+    public int getLockApp(Context context) {
         try {
             return Settings.Global.getInt(context.getContentResolver(), "key_lock_app");
         } catch (Settings.SettingNotFoundException e) {
@@ -158,7 +158,7 @@ public class LockApp extends Hook {
         return -1;
     }
 
-    public static void setGestureLine(Context context, int type) {
+    public void setGestureLine(Context context, int type) {
         Settings.Global.putInt(context.getContentResolver(), "hide_gesture_line", type);
     }
 }

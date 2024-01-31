@@ -45,7 +45,10 @@ public class ScLockApp extends Hook {
     public void init() {
         DexKitBridge dexKitBridge = DexKit.init(loadPackageParam);
         try {
-
+            if (dexKitBridge == null) {
+                logE(tag, "dexKitBridge is null");
+                return;
+            }
             MethodData methodData = dexKitBridge.findMethod(
                     FindMethod.create()
                             .matcher(MethodMatcher.create()

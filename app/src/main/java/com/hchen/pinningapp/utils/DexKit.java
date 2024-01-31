@@ -18,6 +18,8 @@
  */
 package com.hchen.pinningapp.utils;
 
+import com.hchen.pinningapp.hook.Log;
+
 import org.luckypray.dexkit.DexKitBridge;
 
 import de.robv.android.xposed.callbacks.XC_LoadPackage;
@@ -25,14 +27,21 @@ import de.robv.android.xposed.callbacks.XC_LoadPackage;
 public class DexKit {
 
     public static DexKitBridge init(XC_LoadPackage.LoadPackageParam param) {
-        String hostDir = param.appInfo.sourceDir;
-        System.loadLibrary("dexkit");
-        return DexKitBridge.create(hostDir);
+        try {
+            String hostDir = param.appInfo.sourceDir;
+            System.loadLibrary("dexkit");
+            return DexKitBridge.create(hostDir);
+        } catch (Exception e) {
+            Log.logE("DexKit", "Init dexkit failed!");
+            return null;
+        }
     }
 
     public static void close(DexKitBridge dexKitBridge) {
         if (dexKitBridge != null) {
             dexKitBridge.close();
+        } else {
+            Log.logE("DexKit", "DexKitBridge is null, can't close it!");
         }
     }
 }

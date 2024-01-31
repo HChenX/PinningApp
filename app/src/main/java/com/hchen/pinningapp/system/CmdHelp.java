@@ -244,7 +244,7 @@ public class CmdHelp extends Hook {
         }
     }
 
-    private static void setMyLockScreen(PrintWriter pw, Context context, int value) {
+    private void setMyLockScreen(PrintWriter pw, Context context, int value) {
         Settings.Global.putInt(context.getContentResolver(), "exit_lock_app_screen", value);
         if (pw != null) {
             pw.println("Successfully set exit_lock_app_screen to " + value);

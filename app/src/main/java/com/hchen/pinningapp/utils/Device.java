@@ -28,18 +28,26 @@ public class Device {
     public static boolean isPad() {
         Class<?> build = XposedHelpers.findClassIfExists("miui.os.Build", null);
         if (build == null) {
-            Log.logE("Device", "Class miui.os.Build is null");
-            return false;
+            try {
+                build = Class.forName("miui.os.Build", true, ClassLoader.getSystemClassLoader());
+            } catch (ClassNotFoundException e) {
+                Log.logE("Device", "forName get class E: " + e);
+            }
+            if (build == null) {
+                Log.logE("Device", "Class miui.os.Build is null");
+                return false;
+            }
         }
         try {
-            Field tablet = build.getDeclaredField("IS_TABLET");
-            tablet.setAccessible(true);
-            return tablet.getBoolean(null);
-        } catch (NoSuchFieldException | IllegalAccessException e) {
+            return (boolean) XposedHelpers.getStaticObjectField(build, "IS_TABLET");
+        } catch (Exception e) {
+            Log.logE("Device", "Xposed failed get IS_TABLET E: " + e);
             try {
-                return (boolean) XposedHelpers.getStaticObjectField(build, "IS_TABLET");
-            } catch (Exception f) {
-                Log.logE("Device", "Failed get IS_TABLET");
+                Field tablet = build.getDeclaredField("IS_TABLET");
+                tablet.setAccessible(true);
+                return tablet.getBoolean(null);
+            } catch (NoSuchFieldException | IllegalAccessException f) {
+                Log.logE("Device", "Failed get IS_TABLET E: " + f);
                 return false;
             }
         }
