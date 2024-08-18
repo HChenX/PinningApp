@@ -27,6 +27,7 @@ import android.os.Handler;
 import android.os.Message;
 import android.provider.Settings;
 import android.view.MotionEvent;
+import android.view.View;
 
 import androidx.annotation.NonNull;
 
@@ -64,16 +65,16 @@ public class UiLockApp extends Hook {
                     @Override
                     protected void after(XC_MethodHook.MethodHookParam param) {
                         Context context = (Context) param.args[0];
-                        if (resources == null) {
-                            resources = addModuleRes(context);
-                        }
                         if (!isListen) {
                             ContentObserver contentObserver = new ContentObserver(new Handler(context.getMainLooper())) {
                                 @Override
                                 public void onChange(boolean selfChange) {
                                     isLock = getLockApp(context) != -1;
                                     if (getLockApp(context) != -1) {
-                                        XposedHelpers.callMethod(param.thisObject, "scheduleAutoHide");
+                                        try {
+                                            XposedHelpers.callMethod(param.thisObject, "scheduleAutoHide");
+                                        } catch (Throwable e) {
+                                        }
                                     }
                                 }
                             };
@@ -91,17 +92,15 @@ public class UiLockApp extends Hook {
                     @Override
                     protected void before(XC_MethodHook.MethodHookParam param) {
                         MotionEvent motionEvent = (MotionEvent) param.args[0];
+                        View view = (View)param.thisObject;
                         // logE(tag, "mo: " + motionEvent.getActionMasked());
                         mContext = (Context) XposedHelpers.callMethod(param.thisObject, "getContext");
                         int action = motionEvent.getActionMasked();
                         int lockId = getLockApp(mContext);
-                        if (getSystemLockEnable(mContext)) {
-                            setSystemLockApp(mContext);
-                        }
-                        if (getSystemLockScreen(mContext)) {
-                            setSystemLockScreen(mContext, 0);
-                        }
-                        if (action == 2) {
+                        setSystemLockApp(mContext);
+                        setSystemLockScreen(mContext);
+                        setMyLockScreen(mContext, 0);
+                        if (action == 2) { // 移动手指判定失效
                             count = count + 1;
                             if (count > 6) {
                                 remoAllMes();
@@ -175,6 +174,19 @@ public class UiLockApp extends Hook {
                 }
         );
 
+        findAndHookMethod("com.android.wm.shell.miuimultiwinswitch.miuiwindowdecor.MiuiBaseWindowDecoration",
+                "shouldHideCaption",
+                new HookAction() {
+                    @Override
+                    protected void after(XC_MethodHook.MethodHookParam param) {
+                        Context context = (Context) XposedHelpers.getObjectField(param.thisObject, "mContext");
+                        if(getLockApp(context) != -1){
+                            param.setResult(true);
+                        }
+                    }
+                }
+        );
+
         findAndHookMethod("com.android.systemui.shared.system.ActivityManagerWrapper",
                 "isLockTaskKioskModeActive", new HookAction() {
                     @Override
@@ -192,6 +204,7 @@ public class UiLockApp extends Hook {
                     }
                 }
         );
+
         Class<?> ScreenPinningNotify = findClassIfExists("com.android.systemui.navigationbar.ScreenPinningNotify");
         if (ScreenPinningNotify != null) {
             Method[] methods = ScreenPinningNotify.getDeclaredMethods();
@@ -223,46 +236,30 @@ public class UiLockApp extends Hook {
         mHandler.removeMessages(UNLOCK_APP);
     }
 
-    public int getLockApp(Context context) {
+    public static int getLockApp(Context context) {
         try {
             return Settings.Global.getInt(context.getContentResolver(), "key_lock_app");
         } catch (Settings.SettingNotFoundException e) {
-            logE("LockApp", "getInt hyceiler_lock_app will set -1 E: " + e);
+            logE("LockApp", "getLockApp e: " + e);
             setLockApp(context, -1);
         }
         return -1;
-    }
-
-    public boolean getSystemLockEnable(Context context) {
-        try {
-            return Settings.System.getInt(context.getContentResolver(), "lock_to_app_enabled") == 1;
-        } catch (Settings.SettingNotFoundException e) {
-            logE(tag, "getSystemLock will set 0 E: " + e);
-            setSystemLockApp(context);
-        }
-        return false;
-    }
-
-    public boolean getSystemLockScreen(Context context) {
-        try {
-            return Settings.Secure.getInt(context.getContentResolver(), "lock_to_app_exit_locked") == 1;
-        } catch (Settings.SettingNotFoundException e) {
-            logE(tag, "getSystemLockScreen will set 0 E: " + e);
-            setSystemLockScreen(context, 0);
-        }
-        return false;
     }
 
     public static void setLockApp(Context context, int id) {
         Settings.Global.putInt(context.getContentResolver(), "key_lock_app", id);
     }
 
-    public void setSystemLockApp(Context context) {
+    public static void setSystemLockApp(Context context) {
         Settings.System.putInt(context.getContentResolver(), "lock_to_app_enabled", 0);
     }
 
-    public void setSystemLockScreen(Context context, int value) {
-        Settings.Secure.putInt(context.getContentResolver(), "lock_to_app_exit_locked", value);
+    public static void setSystemLockScreen(Context context) {
+        Settings.Secure.putInt(context.getContentResolver(), "lock_to_app_exit_locked", 0);
+    }
+
+    public static void setMyLockScreen(Context context, int value) {
+        Settings.Global.putInt(context.getContentResolver(), "exit_lock_app_screen", value);
     }
 
     /**

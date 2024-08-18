@@ -18,6 +18,8 @@
  */
 package com.hchen.pinningapp.system;
 
+import static com.hchen.pinningapp.utils.Device.isPad;
+
 import android.content.Context;
 import android.database.ContentObserver;
 import android.net.Uri;
@@ -28,7 +30,6 @@ import android.view.MotionEvent;
 import androidx.annotation.Nullable;
 
 import com.hchen.pinningapp.hook.Hook;
-import com.hchen.pinningapp.utils.Device;
 
 import de.robv.android.xposed.XC_MethodHook;
 import de.robv.android.xposed.XposedHelpers;
@@ -37,6 +38,7 @@ public class SyLockApp extends Hook {
     private int taskId;
     private boolean isObserver = false;
     boolean isLock = false;
+    boolean needLockScreen = false;
 
     @Override
     public void init() {
@@ -47,24 +49,18 @@ public class SyLockApp extends Hook {
                     protected void after(XC_MethodHook.MethodHookParam param) {
                         try {
                             Context context = (Context) XposedHelpers.getObjectField(param.thisObject, "mContext");
-                            if (context == null) {
-                                context = findContext(FlAG_ONLY_ANDROID);
-                                if (context == null) {
-                                    logE(tag, "onSystemReady context is null!!");
-                                    return;
-                                }
-                            }
+                            if (context == null) return;
                             if (!isObserver) {
-                                Context finalContext = context;
-                                ContentObserver contentObserver = new ContentObserver(new Handler(finalContext.getMainLooper())) {
+                                ContentObserver contentObserver = new ContentObserver(new Handler(context.getMainLooper())) {
                                     @Override
                                     public void onChange(boolean selfChange, @Nullable Uri uri, int flags) {
-                                        isLock = getLockApp(finalContext) != -1;
+                                        isLock = getLockApp(context) != -1;
                                         if (isLock) {
-                                            taskId = getLockApp(finalContext);
-                                            callMethod(param.thisObject, "startSystemLockTaskMode", taskId);
+                                            taskId = getLockApp(context);
+                                            XposedHelpers.callMethod(param.thisObject, "startSystemLockTaskMode", taskId);
+                                            needLockScreen = getMyLockScreen(context) == 1;
                                         } else {
-                                            callMethod(param.thisObject, "stopSystemLockTaskMode");
+                                            new Handler(context.getMainLooper()).postDelayed(() -> XposedHelpers.callMethod(param.thisObject, "stopSystemLockTaskMode"),300);
                                         }
                                     }
                                 };
@@ -80,20 +76,32 @@ public class SyLockApp extends Hook {
                 }
         );
 
+        findAndHookMethod("com.miui.server.input.util.ShortCutActionsUtils",
+                "triggerHapticFeedback", boolean.class, String.class,
+                String.class, boolean.class, String.class,
+                new HookAction() {
+                    @Override
+                    protected void after(XC_MethodHook.MethodHookParam param) {
+                        /*if (!mPrefsMap.getBoolean("system_framework_guided_access_status"))
+                            return; // 不知道为什么还是需要重启才生效*/
+                        String shortcut = (String) param.args[1];
+                        if ("imperceptible_press_power_key".equals(shortcut) || "long_press_power_key".equals(shortcut)) {
+                            Context context = (Context) XposedHelpers.getObjectField(param.thisObject, "mContext");
+                            isLock = getLockApp(context) != -1;
+                            if (isLock) {
+                                setLockApp(context, -1);
+                            }
+                        }
+                    }
+                }
+        );
+
         findAndHookMethod("com.android.server.wm.LockTaskController",
                 "shouldLockKeyguard", int.class,
                 new HookAction() {
                     @Override
                     protected void before(XC_MethodHook.MethodHookParam param) {
-                        Context mContext = (Context) getObjectField(param.thisObject, "mContext");
-                        if (mContext == null) {
-                            mContext = findContext(FlAG_ONLY_ANDROID);
-                            if (mContext == null) {
-                                logE(tag, "shouldLockKeyguard context is null!!");
-                                return;
-                            }
-                        }
-                        if (getMyLockScreen(mContext) == 1) {
+                        if (needLockScreen) {
                             param.setResult(true);
                         } else {
                             param.setResult(false);
@@ -102,7 +110,7 @@ public class SyLockApp extends Hook {
                 }
         );
 
-        if (Device.isPad()) {
+        if (isPad()) {
             findAndHookMethod("com.android.server.wm.MiuiCvwGestureController$GesturePointerEventListener",
                     "onPointerEvent", MotionEvent.class,
                     new HookAction() {
@@ -117,10 +125,13 @@ public class SyLockApp extends Hook {
         }
     }
 
+    public static void setLockApp(Context context, int id) {
+        Settings.Global.putInt(context.getContentResolver(), "key_lock_app", id);
+    }
+
     public int getLockApp(Context context) {
         try {
             return Settings.Global.getInt(context.getContentResolver(), "key_lock_app");
-
         } catch (Settings.SettingNotFoundException e) {
             logE(tag, "getLockApp E: " + e);
         }
@@ -131,7 +142,7 @@ public class SyLockApp extends Hook {
         try {
             return Settings.Global.getInt(context.getContentResolver(), "exit_lock_app_screen");
         } catch (Settings.SettingNotFoundException e) {
-            logE(tag, "getMyLockScreen E: " + e);
+            logE(tag, "getMyLockScreen E will set " + e);
         }
         return 0;
     }
